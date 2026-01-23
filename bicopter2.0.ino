@@ -85,11 +85,19 @@ void loop() {
   // --- 2. SENSING ---
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
-  float rawPitch = atan2(-a.acceleration.x, a.acceleration.z) * 180 / PI;
+  float rawPitch = atan2(-a.acceleration.x, a.acceleration.z) * 180 / PI;//pitch
+  //complementary filter for pitch
   smoothedPitch = ALPHA * (smoothedPitch + g.gyro.y * dt * (180 / PI)) + (1 - ALPHA) * rawPitch;
 
+  float rawRoll = atan2(-a.acceleration.y, a.acceleration.z) * 180 / PI;//roll
+  //complementary filter for roll
+  smoothedRoll = ALPHA * (smoothedRoll + g.gyro.x * dt * (180 / PI)) + (1 - ALPHA) * rawRoll;
+
+
   // --- 3. PID ---
-  float error = desired_pitch - smoothedPitch;
+  float Pitch_error = desired_pitch - smoothedPitch;
+  float Roll_error = desired_roll - smoothedRoll
+
   pitchErrorSum = constrain(pitchErrorSum + error * dt, -15, 15);
   float pid = (KP_PITCH * error) + (KI_PITCH * pitchErrorSum) + (KD_PITCH * (error - lastPitchError) / dt);
   lastPitchError = error;
